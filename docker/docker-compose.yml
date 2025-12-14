@@ -15,7 +15,7 @@ services:
       - 9200:9200
       - 9300:9300
     volumes:
-      - /home/sbykov/detection-sandbox/config/elasticsearch/esdata:/usr/share/elasticsearch/data
+      - ~/detection-sandbox/config/elasticsearch/esdata:/usr/share/elasticsearch/data
     stdin_open: true
     tty: true
     logging:
@@ -53,7 +53,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - /home/sbykov/detection-sandbox/config/logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ~/detection-sandbox/config/logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     ports:
       - 5044:5044
     links:
@@ -79,9 +79,9 @@ services:
     volumes:
       - /var/run/docker.sock:/host_docker/docker.sock
       - /var/lib/docker:/host_docker/var/lib/docker
-      - /home/sbykov/detection-sandbox/config/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ~/detection-sandbox/config/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
       # логи juice-shop
-      - /home/sbykov/detection-sandbox/logs/juice-shop:/juice-logs:ro
+      - ~/detection-sandbox/logs/juice-shop:/juice-logs:ro
       # logs auditd
       - /var/log/audit:/var/log/audit:ro
     command: ["filebeat", "-e","-strict.perms=false"]

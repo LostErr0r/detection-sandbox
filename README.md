@@ -18,7 +18,7 @@ make deploy
 ```
 
 
-# troubleshiiting
+# troubleshooting
 Если в dashboard нет никакних бордов, то добавляем вручную, из главной папки проекта где лежит файл export.ndjson
 
 ```

@@ -1,0 +1,30 @@
+title: Модификация авторизованных ключей SSH в Linux
+id: 3a86bce1-3df3-4cf3-84bd-sshkeys0001
+status: experimental
+description: Обнаруживает изменения в файле SSH authorized_keys с помощью auditd
+author: sbykov
+tags:
+  - attack.persistence
+  - attack.t1098
+
+logsource:
+  product: linux
+  service: auditd
+
+detection:
+  selection_any:
+    key: "ssh_authkeys"
+    type:
+      - "SYSCALL"
+      - "PATH"
+  condition: selection_any
+fields:
+  - type
+  - key
+  - name
+  - auid
+  - uid
+  - proctitle
+falsepositives:
+  - Законное добавление администраторами SSH-ключей
+level: high

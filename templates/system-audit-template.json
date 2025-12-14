@@ -1,0 +1,45 @@
+PUT _index_template/system-audit-template
+{
+  "index_patterns": ["system-audit-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "index.mapping.total_fields.limit": 3000
+    },
+    "mappings": {
+      "dynamic_templates": [
+        {
+          "strings_as_keyword": {
+            "match_mapping_type": "string",
+            "mapping": { "type": "keyword" }
+          }
+        }
+      ],
+      "properties": {
+        "@timestamp": { "type": "date" },
+
+        "log_type":   { "type": "keyword" },
+        "app":        { "type": "keyword" },
+
+        "source.ip":  { "type": "ip" },
+
+        "event.action":   { "type": "keyword" }, 
+        "event.category": { "type": "keyword" }, 
+
+        "user.id":      { "type": "keyword" },   
+        "user.name":    { "type": "keyword" },   
+        "user.euid":    { "type": "keyword" },
+        "user.auid":    { "type": "keyword" },
+
+        "process.pid":  { "type": "integer" },
+        "process.ppid": { "type": "integer" },
+        "process.name": { "type": "keyword" },
+        "process.executable": { "type": "keyword" },
+
+        "audit_type": { "type": "keyword" },     
+        "audit_id":   { "type": "keyword" }      
+      }
+    }
+  }
+}

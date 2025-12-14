@@ -1,0 +1,57 @@
+title: Подозрительная полезная нагрузка XSS в конечной точке поиска приложения Juice Shop
+id: 4d7b0e70-juiceshop-xss
+description: >
+  Обнаруживает потенциальные попытки отраженной или сохраненной XSS-атаки, отправляемые в Juice Shop,в частности, через конечную точку /rest/products/search с использованием подозрительных URL-кодированных полезных нагрузок или HTML/скриптовых тегов.
+status: experimental
+author: sbykov
+references:
+  - https://owasp.org/www-community/attacks/xss/
+tags:
+  - attack.T1059.007
+  - attack.Execution
+  - juiceshop.xss
+
+logsource:
+  product: webserver
+  service: juice-shop
+  category: webserver
+  index: juice-shop-access-*
+
+detection:
+  selection_endpoint:
+    log_type: "juice_access"
+    request|contains: "/rest/products/search"
+
+  # XSS-маркеры, закодированные в URL-адресе 
+  selection_payloads:
+    request|contains:
+      - "%3Cscript"            # <script
+      - "%3Cimg"               # <img
+      - "%3Ciframe"            # <iframe
+      - "%3Csvg"               # <svg
+      - "javascript%3Aalert"   # javascript:alert
+      - "onerror%3D"           # onerror=
+      - "onload%3D"            # onload=
+
+  # Некодированные варианты (если попадут в лог)
+  selection_plain:
+    request|contains:
+      - "<script"
+      - "<img"
+      - "<iframe"
+      - "<svg"
+      - "javascript:alert"
+      - "onerror="
+      - "onload="
+
+  condition: selection_endpoint AND (selection_payloads OR selection_plain)
+
+fields:
+  - @timestamp
+  - clientip
+  - request
+  - response
+  - verb
+  - useragent.original
+
+level: high

@@ -1,0 +1,29 @@
+title: Brute Force логина Juice shop
+id: 2f4e4c10-juiceshop-bruteforce
+description: >
+  Несколько неудачных попыток аутентификации (HTTP 401) в /rest/user/login с одного IP-адреса за короткое время.
+status: experimental
+author: sbykov
+logsource:
+  product: webserver
+  service: juice-shop
+  index: juice-shop-access-*
+detection:
+  selection:
+    log_type: "juice_access"
+    request: "/rest/user/login"
+    verb: "POST"
+    response: 401
+  condition: selection | count() by clientip > 10
+fields:
+  - @timestamp
+  - clientip
+  - request
+  - response
+  - agent
+falsepositives:
+  - Законные пользователи постоянно ошибаются в вводе паролей
+level: medium
+tags:
+  - attack.T1110
+  - juiceshop.bruteforce

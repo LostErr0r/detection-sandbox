@@ -1,0 +1,87 @@
+version: '3.3'
+services:
+  elasticsearch:
+    container_name: elasticsearch
+    image: elasticsearch:7.17.18
+    environment:
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+      - 9300:9300
+    volumes:
+      - /home/sbykov/detection-sandbox/config/elasticsearch/esdata:/usr/share/elasticsearch/data
+    stdin_open: true
+    tty: true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "50"
+        
+  kibana:
+    container_name: kibana
+    image: kibana:7.17.18
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 5601:5601
+    links:
+      - elasticsearch:elasticsearch
+    depends_on:
+      - elasticsearch
+    stdin_open: true
+    tty: true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "50"
+        
+  logstash:
+    container_name: logstash
+    image: logstash:7.17.18
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - /home/sbykov/detection-sandbox/config/logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - 5044:5044
+    links:
+      - elasticsearch:elasticsearch
+    depends_on:
+      - elasticsearch
+    stdin_open: true
+    tty: true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "50"
+        
+  filebeat:
+    user: root
+    container_name: filebeat
+    image: docker.elastic.co/beats/filebeat:7.17.18
+    links:
+      - logstash:logstash
+    depends_on:
+      - logstash     
+    volumes:
+      - /var/run/docker.sock:/host_docker/docker.sock
+      - /var/lib/docker:/host_docker/var/lib/docker
+      - /home/sbykov/detection-sandbox/config/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      # логи juice-shop
+      - /home/sbykov/detection-sandbox/logs/juice-shop:/juice-logs:ro
+      # logs auditd
+      - /var/log/audit:/var/log/audit:ro
+    command: ["filebeat", "-e","-strict.perms=false"]

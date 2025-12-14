@@ -1,0 +1,25 @@
+filebeat.inputs:
+  # Логирование access.log juice-shop
+  - type: log
+    enabled: true
+    paths:
+      - /juice-logs/access.log*
+    fields:
+      log_type: juice_access
+    fields_under_root: true
+
+   # 3) системный auditd
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/audit/audit.log
+    fields:
+      log_type: system_audit
+    fields_under_root: true
+
+output.logstash:
+  hosts: ["logstash:5044"]
+
+processors:
+  - add_docker_metadata:
+      host: "unix:///host_docker/docker.sock"

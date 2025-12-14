@@ -1,0 +1,24 @@
+title: Linux Создает подозрительное задание cron в файле /etc/cron.d
+id: 7d7b5a60-4c6e-4f3c-9b6a-aaaacron0001
+status: experimental
+description: Обнаруживает создание заданий cron в файле /etc/cron.d с помощью правил auditd с ключом = cron_changes
+author: sbykov
+references: []
+tags:
+  - attack.persistence
+  - attack.t1053.003
+
+logsource:
+  product: linux
+  service: auditd
+
+detection:
+  selection_path:
+    type: "PATH"
+    key: "cron_changes"
+    nametype: "CREATE"
+    name|startswith: "/etc/cron.d/"
+  condition: selection_path
+falsepositives:
+  - Законное администрирование системы, создающее задания cron.
+level: medium

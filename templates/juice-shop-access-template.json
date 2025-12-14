@@ -1,0 +1,41 @@
+PUT _index_template/juice-shop-access-template
+{
+  "index_patterns": ["juice-shop-access-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "index.mapping.total_fields.limit": 2000
+    },
+    "mappings": {
+      "dynamic_templates": [
+        {
+          "strings_as_keyword": {
+            "match_mapping_type": "string",
+            "mapping": { "type": "keyword" }
+          }
+        }
+      ],
+      "properties": {
+        "@timestamp": { "type": "date" },
+
+        "log_type":   { "type": "keyword" }, 
+        "app":        { "type": "keyword" },
+
+        "source.ip":  { "type": "ip" },
+        "user.id":    { "type": "keyword" },
+        "user.name":  { "type": "keyword" },
+
+        "event.action":   { "type": "keyword" },
+        "event.category": { "type": "keyword" },
+
+        "http.request.method": { "type": "keyword" },
+        "url.path":            { "type": "keyword" },
+        "url.original":        { "type": "keyword" },
+        "http.response.status_code": { "type": "integer" },
+
+        "useragent.original": { "type": "keyword" }
+      }
+    }
+  }
+}

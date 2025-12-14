@@ -12,3 +12,17 @@ git clone https://github.com/LostErr0r/detection-sandbox
 cd detection-sandbox
 ./setup.sh
 ```
+```
+newgrp docker
+make deploy
+```
+
+
+# troubleshiiting
+Если в dashboard нет никакних бордов, то добавляем вручную, из главной папки проекта где лежит файл export.ndjson
+
+```
+curl -sS -X POST "http://localhost:5601/api/saved_objects/_import?overwrite=true" \
+  -H "kbn-xsrf: true" \
+  --form file=@"./export.ndjson"
+```

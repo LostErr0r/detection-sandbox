@@ -44,9 +44,10 @@ import_dashboards() {
 
   echo "[*] Importing saved objects from export.ndjson..."
 
-  curl -sS -X POST "http://localhost:5601/api/saved_objects/_import?overwrite=true" \
-    -H "kbn-xsrf: true" \
-    --form file=@"$file" >/dev/null
+ curl -sS -X POST "http://localhost:5601/api/saved_objects/_import?overwrite=true" \
+  -H "kbn-xsrf: true" \
+  --form file=@"./export.ndjson"
+
 
   echo "[+] Dashboards imported"
 }

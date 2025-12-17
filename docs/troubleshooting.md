@@ -96,4 +96,3 @@ index e69de29bb2d1d6434b8b29ae775ad8c2e48c5391..1720ab1e994303c2fa915f1b07d45a8f
 +- Убедись, что правила загружены: `sudo augenrules --check`.  
 +- В `setup.sh` путь для `authorized_keys` жёстко задан (`/home/sbykov/...`). Если пользователь другой, поправь правило и перезагрузи auditd.  
 +- Проверяй сырые события: `sudo ausearch -k cron_changes -i | tail`.
-

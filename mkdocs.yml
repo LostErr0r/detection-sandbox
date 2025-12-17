@@ -1,0 +1,10 @@
+site_name: detection-sandbox
+theme:
+  name: material
+nav:
+  - Главная: index.md
+  - Быстрый старт: quickstart.md
+  - Архитектура: architecture.md
+  - Атаки: attacks.md
+  - Проверки: checks.md
+  - Troubleshooting: troubleshooting.md

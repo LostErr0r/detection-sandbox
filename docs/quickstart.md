@@ -1,139 +1,91 @@
 # Быстрый старт
 
-## Цель
-Развернуть стенд **detection-sandbox** (ELK + Juice Shop) и убедиться, что:
-- контейнеры поднялись,
-- Elasticsearch и Kibana доступны,
-- данные попадают в индексы,
-- в Kibana Discover появляются события.
+Руководство для быстрого развёртывания стенда ELK + Juice Shop, запуска атак и проверки того, что события попадают в Elasticsearch и видны в Kibana.
 
 ## Требования
-- Linux (Ubuntu)
-- Docker + Docker Compose
-- GNU Make
 
-## Запуск стенда
+- Ubuntu или совместимый Linux c `apt`
+- `sudo`-права для установки пакетов и настройки auditd
+- Доступ в интернет для загрузки Docker-образов
 
-Перейди в корень репозитория:
+## 1. Подготовка окружения
+
+В корне репозитория запусти установочный скрипт (ставит Docker, docker compose, gobuster, auditd и добавляет правила аудита):
 
 ```bash
-cd ~/detection-sandbox
+./setup.sh
 ```
 
-Запусти деплой:
+> Скрипт создаёт каталоги данных под `~/detection-sandbox` и добавляет auditd-правила (по умолчанию следят за `~/.ssh/authorized_keys` пользователя `sbykov`). Перед запуском при необходимости поправь путь в `setup.sh`, чтобы он соответствовал твоему пользователю.
 
+После выполнения перелогинься или выполни `newgrp docker`, чтобы применилось членство в группе `docker`.
+
+## 2. Развёртывание
+
+Запусти полный стенд (ELK + Juice Shop, шаблоны индексов, импорт дашбордов):
+
+```bash
 make deploy
+```
 
-Ожидаемо при старте ты увидишь, что поднимаются контейнеры ELK и Juice Shop (elasticsearch, logstash, kibana, filebeat + juice shop).
+Команда вызывает `iac/scripts/deploy.sh`, которая поднимает два Docker Compose (`docker/docker-compose.yml` и `app/juice-shop/docker-compose.yml`), ждёт готовности Elasticsearch/Kibana и накатывает `templates/*.json` плюс `export.ndjson`.
 
-Проверка доступности сервисов
-Elasticsearch
+Альтернативно можно управлять контейнерами вручную:
 
-Проверь, что Elasticsearch отвечает:
+```bash
+make up     # только поднять ELK + Juice Shop
+make down   # остановить все контейнеры стенда
+make ps     # посмотреть статус контейнеров
+```
 
-curl -s http://localhost:9200 | head
+## 3. Проверка сервисов
 
+- **Elasticsearch**: `curl -s http://localhost:9200 | head`
+- **Kibana**: открой `http://localhost:5601`
+- **Juice Shop**: открой `http://localhost:3000`
 
-Ожидаемый результат: JSON с информацией о кластере (name, cluster_name, version и т.п.).
+Оба веб-интерфейса должны открываться без ошибок, а Elasticsearch — отдавать JSON с информацией о кластере.
 
-Kibana
+## 4. Проверка индексов
 
-Открой в браузере:
+Убедись, что появились индексы для логов Juice Shop и auditd:
 
-Kibana: http://localhost:5601
+```bash
+curl -s "http://localhost:9200/_cat/indices?v" | grep -E "juice-shop-access|system-audit"
+```
 
-Ожидаемый результат: открывается интерфейс Kibana без ошибок.
+Если индексы создаются, ingestion работает корректно.
 
-Juice Shop
+## 5. Запуск атак
 
-Открой в браузере:
+Для генерации событий воспользуйся готовыми сценариями (подробности — в разделе [Атаки](attacks.md)):
 
-Juice Shop: http://localhost:3000
+```bash
+make attack-bruteforce   # bruteforce /rest/user/login
+make attack-sqli         # SQLi payload-ы в логине
+make attack-xss          # XSS payload-ы в поиске
+make attack-dirsearch    # gobuster по каталогу приложения
+make attack-auditd       # цепочка сценариев auditd
+```
 
-Ожидаемый результат: открывается приложение OWASP Juice Shop.
+## 6. Проверка попадания событий
 
-Проверка, что логи попадают в Elasticsearch
+Запусти чекеры, которые обращаются в Elasticsearch за последние 30 минут:
 
-Посмотри список индексов:
+```bash
+make check-bruteforce
+make check-sqli
+make check-xss
+make check-dirsearch
+make check-auditd
+```
 
-curl -s "http://localhost:9200/_cat/indices?v" | head -n 50
+На выходе будет PASS/FAIL и счётчик подходящих событий. Если данные не видны, см. [Troubleshooting](troubleshooting.md).
 
+## 7. Остановка стенда
 
-Ожидаемо должны появляться индексы, связанные с логами стенда. В проекте используются шаблоны для:
+Когда закончил, останови контейнеры:
 
-juice-shop-access-* (логи веб-доступа Juice Shop)
-
-system-audit-* (события Linux audit/system audit)
-
-Если индексы есть — значит ingestion работает.
-
-Проверка в Kibana (Discover)
-
-Открой Kibana → Discover.
-
-Выбери Data View/Index pattern:
-
-juice-shop-access-* (если создан)
-
-system-audit-* (если создан)
-
-Убедись, что выбран корректный time range (например Last 15 minutes или Last 1 hour).
-
-Ожидаемый результат: в таблице событий появляются записи.
-
-Troubleshooting
-1) “В Discover пусто”
-
-Проверь по порядку:
-
-Контейнеры запущены:
-
-docker ps
-
-Есть ли индексы:
-
-curl -s "http://localhost:9200/_cat/indices?v"
-Расширь time range в Kibana (часто проблема именно в этом):
-
-поставь Last 1 hour или Last 24 hours
-
-Посмотри логи Logstash/Filebeat:
-
-docker logs logstash --tail 200
-docker logs filebeat --tail 200
-
-Частые причины:
-
-парсинг не совпадает с форматом логов,
-
-Logstash не может записать в ES,
-
-время события не попадает в выбранное окно (timezone/timepicker).
-
-2) “Чекер FAIL, а в Discover вижу”
-
-Почти всегда это одно из:
-
-чекер смотрит в окно now-30m, а событие было раньше → увеличь окно в скрипте/параметрах
-
-чекер ищет другой индекс/поле, чем у тебя реально записалось
-
-Если чекер — это make check-*, открой соответствующий скрипт в iac/scripts/ и проверь:
-
-какой index pattern он запрашивает,
-
-какой time window,
-
-какие поля/URI/коды ответа он ожидает.
-
-3) “Kibana rule/alert не видит индекс”
-
-Проверь:
-
-выбран ли правильный Data View/Index pattern
-
-есть ли данные в этом индексе прямо сейчас (Discover)
-
-время (time range) совпадает с моментом атаки/события
-
-в правиле/алерте указан правильный индекс и фильтры
+```bash
+make down
+```

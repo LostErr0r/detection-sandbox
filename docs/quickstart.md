@@ -18,7 +18,7 @@
 
 ```bash
 cd ~/detection-sandbox
-
+```
 
 Запусти деплой:
 

@@ -90,48 +90,7 @@ make check-auditd
 ```bash
 make down
 ```
-`sbykov`). Перед запуском при необходимости поправь путь в `setup.sh`, чтобы он соответствовал твоему пользователю.
- 
--Если индексы есть — значит ingestion работает.
-+После выполнения перелогинься или выполни `newgrp docker`, чтобы применилось членство в группе `docker`.
- 
--Проверка в Kibana (Discover)
-+## 2. Развёртывание
- 
--Открой Kibana → Discover.
-+Запусти полный стенд (ELK + Juice Shop, шаблоны индексов, импорт дашбордов):
- 
--Выбери Data View/Index pattern:
--
--juice-shop-access-* (если создан)
--
--system-audit-* (если создан)
--
--Убедись, что выбран корректный time range (например Last 15 minutes или Last 1 hour).
--
--Ожидаемый результат: в таблице событий появляются записи.
--
--Troubleshooting
--1) “В Discover пусто”
--
--Проверь по порядку:
--
--Контейнеры запущены:
--
--docker ps
--
--Есть ли индексы:
--
--curl -s "http://localhost:9200/_cat/indices?v"
--Расширь time range в Kibana (часто проблема именно в этом):
--
--поставь Last 1 hour или Last 24 hours
-+```bash
-+make deploy
-+```
- 
--Посмотри логи Logstash/Filebeat:
-+Команда вызывает `iac/scripts/deploy.sh`, которая поднимает два Docker Compose (`docker/docker-compose.yml` и `app/juice-shop/docker-compose.yml`), ждёт готовности Elasticsearch/Kibana и накатывает `templates/*.json` плюс `export.ndjson`.
+готовности Elasticsearch/Kibana и накатывает `templates/*.json` плюс `export.ndjson`.
  
 -docker logs logstash --tail 200
 -docker logs filebeat --tail 200
